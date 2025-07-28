@@ -1,0 +1,316 @@
+---
+title: "getting-started"
+author: "Harrison Zhu"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{getting-started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+This demonstrates how to utilize the functionalities of the `cleandataframe` to
+clean and validate data in a vector or data frame.
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(cleandataframe)
+```
+
+# Cleaning a Character Vector
+
+The following vector contains typos, duplicates, empty values, NA values, incorrectly
+assigned NA values, and different regular expression patterns.
+
+```{r}
+vector1 <- c("café", "apple", NA, "apple", "aple", "NA", "brick", "blick", "cow3", "apple", "crow")
+```
+
+Vectors can be cleaned by calling different functions manually for greater control, or by
+calling the `clean_vector` function, which consolidates all the functions together,
+reducing the flexibility but making it easier and less time consuming to clean a vector.
+
+To perform the following operations on `vector1`:
+- Check/assert the class of the vector is initially `"character"` using `assert_class`
+- Check/assert the encoding of the vector is initially `"UTF-8"` using `assert_encode`
+- Convert the encoding of the vector to `"latin1"` using `convert_encode`
+- Check/assert the formatting of the string is only letters in the english alphabet or empty using `assert_format`
+- Convert the formatting to only letters in the english alphabet or empty, replace invalid conversions with `"NA"` using `convert_format`
+- Check for typos and replace them with the most common occurrence using `check_typo`
+- Check for duplicate values in the vector
+  - Can only be done using `clean_vector`
+- Check for empty values and remove them
+  - Can only be done using `clean_vector`
+
+Each function can be called separately.
+
+```{r}
+# Copy of vector1 to run example without running previous code
+vector1 <- c("café", "apple", NA, "apple", "aple", "NA", "brick", "blick", "cow3", "apple", "crow")
+
+assert_class(vector1, required_class = "character")
+assert_encode(vector1, required_encode = "UTF-8")
+vector1 <- convert_encode(vector1, required_encode = "latin1", from_encode = "UTF-8")
+assert_format(vector1, regex_pattern = "^[A-Za-z]*$")
+vector1 <- convert_format(vector1, regex_pattern = "^[A-Za-z]*$", na_value = "NA")
+vector1 <- check_typo(vector1, correct_method = "replace")
+vector1 <- clean_vector(vector1, validate_non_duplicate_value = TRUE, validate_nonempty_value = TRUE, empty_operation = "remove", na_value = "NA")
+
+vector1
+```
+
+This can be tedious and is quite a lot of typing just to check a single vector.
+Additionally, certain functionalities like checking for duplicates and empty values
+can only be done in the `clean_vector` function anyways. As such, it is easier to
+consolidate all the functions into just one `clean_vector` call.
+
+```{R}
+# Copy of vector1 to run example without running previous code
+vector1 <- c("café", "apple", NA, "apple", "aple", "NA", "brick", "blick", "cow3", "apple", "crow")
+
+vector1 <- clean_vector(
+  vector1,
+  class_required = "character",
+  encode_required = "UTF-8",
+  encode_convert = "latin1",
+  validate_format = TRUE,
+  convert_format = TRUE,
+  format_pattern = "^[A-Za-z]*$",
+  check_typo = TRUE,
+  correct_typo = TRUE,
+  typo_operation = "replace",
+  validate_non_duplicate_value = TRUE,
+  validate_nonempty_value = TRUE,
+  empty_operation = "remove",
+  na_value = "NA"
+)
+
+vector1
+```
+
+That being said, there may be times where a single call of `clean_vector` may not be enough
+to complete all desired operations.
+
+Since, `clean_vector` performs operations in a specific order:
+1. Check/assert the class
+2. Convert the class
+3. Check/assert the encoding
+4. Convert the encoding
+5. Check/assert the format
+6. Convert the format
+7. Check and correct typos
+8. Check and perform an action on duplicate values
+9. Check and perform an action on empty values
+
+If someone needed to do operations out of that order, say to first remove all `NA` values in
+a vector before then converting the format to be only letters, they would have to do multiple
+function calls instead of consolidating into a single function call.
+
+For example, trying to run this in a single `clean_vector` call will return a vector where
+incompatible strings are replaced and then all `NA` values are removed, including those
+that became `NA` after the conversion.
+
+```{r}
+vector2 <- c("apple", "", NA, "b2c3", "fork", NA, "123", "cow")
+
+vector2 <- clean_vector(
+  vector2,
+  convert_format = TRUE,
+  format_pattern = "^[A-Za-z]*$",
+  validate_nonempty_value = TRUE,
+  empty_operation = "remove"
+)
+
+vector2
+```
+
+The resulting vector has the `NA` values produced by the conversion also removed, which was
+not the user's intent. Instead, two separate function calls should be done, where using 
+`convert_format` directly is easier to understand than another call of the `clean_vector`
+function.
+
+```{r}
+vector2 <- c("apple", "", NA, "b2c3", "fork", NA, "123", "cow")
+
+vector2 <- clean_vector(vector2, validate_nonempty_value = TRUE, empty_operation = "remove")
+vector2 <- convert_format(vector2, regex_pattern = "^[A-Za-z]*$")
+
+vector2
+```
+
+
+
+# Cleaning a Data Frame
+
+The following data frame contains duplicate columns and records, empty columns and records,
+poorly named columns, and issues with some of the data within some of the columns.
+
+```{r}
+df <- data.frame(
+  names = c("Alice", "Bob", "Collin", "Donna", "Ethan", NA, "Bob"),
+  AGE = c(20, 23, 28, 20, 25, NA, 23),
+  FavoriteColor = c("red", "green", "yellow", "blue", "orange", NA, "green"),
+  names_dup = c("Alice", "Bob", "Collin", "Donna", "Ethan", NA, "Bob"),
+  height = c(NA, NA, NA, NA, NA, NA, NA)
+)
+
+names(df)[4] <- "names" # Ensures that 4th column has same column name
+```
+
+To take care of such issues, the `clean_dataframe` function is called to perform the following
+changes:
+
+- Convert the column names to be `"lower_camel"` using the `colname_case_style` parameter
+- Ensure that column names only use english letters using the `colname_pattern` parameter
+- No need to clean columns as different columns have different classes and formats
+- Remove empty and duplicate columns using a vector passed into the `column_operation` parameter
+- Remove empty and duplicate records using a vector passed into the `record_operation` parameter
+
+```{r}
+# Copy of df to run example without running previous code
+df <- data.frame(
+  names = c("Alice", "Bob", "Collin", "Donna", "Ethan", NA, "Bob"),
+  AGE = c(20, 23, 28, 20, 25, NA, 23),
+  FavoriteColor = c("red", "green", "yellow", "blue", "orange", NA, "green"),
+  names_dup = c("Alice", "Bob", "Collin", "Donna", "Ethan", NA, "Bob"),
+  height = c(NA, NA, NA, NA, NA, NA, NA)
+)
+names(df)[4] <- "names"
+
+# One call to remove duplicates
+df <- clean_dataframe(
+  df,
+  colname_case_style = "lower_camel",
+  colname_pattern = "^[A-Za-z]*$",
+  check_column = TRUE,
+  column_operation = c("remove_duplicates", "remove_empty"),
+  check_records = TRUE,
+  record_operation = c("remove_duplicates", "remove_empty")
+)
+
+df
+```
+
+Similarly to `clean_vector`, `clean_dataframe` also has an order of operations:
+
+1. Converting the column name style in `colname_case_style`
+2. Converting the column name format in `colname_pattern`
+3. Converting the record name style in `rowname_case_style`
+4. Converting the record name format in `rowname_pattern`
+5. Calling `clean_vector` on each column with the parameters listed in `clean_column_args`
+6. Performing the specified operations on each column in `column_operation`
+  - Before other operations are performed, `"keep"` checks for duplicates, this does not stop other operations from being performed
+  - Operations that check and alter duplicate values are first, then ones with no name, then incomplete columns, and lastly empty columns
+  - Replace operations are performed before their corresponding remove operations
+7. Performing the specified operations on each record in `record_operation`
+  - Before other operations are performed, `"keep"` checks for duplicates, this does not stop other operations from being performed
+  - Operations that check and alter duplicate values are first, then ones with no name, then incomplete rows, and lastly empty rows
+  - Replace operations are performed before their corresponding remove operations
+8. Whitespace is replaced by `NA` values
+
+There may be occurrences where the built-in order of operations may not bring about
+the desired result. Thus, multiple function calls are needed to complete the desired
+operations.
+
+Using the same data frame from the previous example, removing all the empty columns and
+records and then replacing duplicates will not work with one function call. Instead it
+returns a data frame with the duplicates also removed as the replacement is done before
+the removal of empty columns and records as shown below.
+
+```{r}
+# Copy of df to run example without running previous code
+df <- data.frame(
+  names = c("Alice", "Bob", "Collin", "Donna", "Ethan", NA, "Bob"),
+  AGE = c(20, 23, 28, 20, 25, NA, 23),
+  FavoriteColor = c("red", "green", "yellow", "blue", "orange", NA, "green"),
+  names_dup = c("Alice", "Bob", "Collin", "Donna", "Ethan", NA, "Bob"),
+  height = c(NA, NA, NA, NA, NA, NA, NA)
+)
+names(df)[4] <- "names"
+
+df <- clean_dataframe(
+  df,
+  check_column = TRUE,
+  column_operation = c("replace_duplicates", "remove_empty"),
+  check_records = TRUE,
+  record_operation = c("replace_duplicates", "remove_empty")
+)
+
+df
+```
+
+Two separate function calls are needed in order to get the desired results as shown below.
+
+```{r}
+df <- data.frame(
+  names = c("Alice", "Bob", "Collin", "Donna", "Ethan", NA, "Bob"),
+  AGE = c(20, 23, 28, 20, 25, NA, 23),
+  FavoriteColor = c("red", "green", "yellow", "blue", "orange", NA, "green"),
+  names_dup = c("Alice", "Bob", "Collin", "Donna", "Ethan", NA, "Bob"),
+  height = c(NA, NA, NA, NA, NA, NA, NA)
+)
+names(df)[4] <- "names"
+
+df <- clean_dataframe(
+  df,
+  check_column = TRUE,
+  column_operation = "remove_empty",
+  check_records = TRUE,
+  record_operation = "remove_empty"
+)
+
+df <- clean_dataframe(
+  df,
+  check_column = TRUE,
+  column_operation = "replace_duplicates",
+  check_records = TRUE,
+  record_operation = "replace_duplicates"
+)
+
+df
+```
+
+
+
+# Limitations on Cleaning a Data Frame
+
+The parameters in `clean_column_args` call the `clean_vector` function of each column
+in the data frame, whether or not the user intended for that to occur, issues may arise. 
+For example, data frames many times contain a mix of numeric and character vectors, where
+checking/asserting for the same class among differing columns may not be appropriate. 
+Another possible example is the replacement of duplicates, where some columns do not want
+duplicates while others do.
+
+That being said, checking the typos and separators of the vector are only performed on
+character vectors or factors, so there will be no issue of having either operation being
+done on innappropriate class types when using the `clean_vector` function.
+
+Given that the `clean_dataframe` function is done over a collection of columns where
+there may be variation in class, encoding, formatting, and other aspects, certain operations
+are better performed using the `clean_vector` function and replacing the specific column if
+needed, rather than using the `clean_dataframe` function.
+
+Additionally, since every action included in the `column_operation` and `record_operation`
+parameters is performed, contradicting operations can lead to undesired results.
+
+For example, if a call of `clean_dataframe` included both `"keep"` and `"remove_duplicates"`,
+a line would be printed stating that duplicates were being kept due to the `"keep"` operation,
+but the duplicate columns or records would still be deleted due to the `"remove_duplicates"`
+operation that is done afterwards.
+
+As such, contradicting operations or ones that fall outside of the order of operations
+should not be called. They should either be done in separate calls, or it should be evaluated
+if the original intended operations bring about the desired results.
+
+Additionally, certain vector operations on columns or rows within the data frame are not
+viable due to changing the length of the vector, which would result in an error as there
+cannot be columns or rows of varying length within a data frame. Examples are like deleting
+duplicates in a column or removing empty values.

@@ -1,0 +1,25 @@
+Package: cleandataframe
+Type: Package
+Title: Dataframe Cleaning and Conversion
+Version: 0.1.0
+Author: Harrison Zhu, Haifeng Zhu
+Maintainer: <harrison0zhu@gmail.com>
+Description: 
+    Provides functions for cleaning and checking vectors and data frames in R.
+    Has functionalities for checking and converting class type, encoding, formatting, and typos.
+    Specifically allows for operating on duplicates and empty values within vectors.
+    Added functionality for data frames and operating on duplicate or empty records and columns.
+    Designed to make data processing much simpler and easy, cleaning up messy data
+    before final touches are added on.
+Imports:
+    snakecase,
+    stringdist
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+VignetteBuilder: knitr
+Suggests:
+    rmarkdown,
+    knitr
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
