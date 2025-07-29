@@ -13,5 +13,5 @@ install.packages(c("snakecase", "stringdist"))
 Install the `cleandataframe` package.
 
 ```r
-devtools::install_github("harrison-zhu/cleandataframe")
+devtools::install_github("harrison-zhu/cleandataframe", build_vignettes = TRUE)
 ```
