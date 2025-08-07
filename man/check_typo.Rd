@@ -12,6 +12,8 @@ check_typo(
   max_distance = 0.5,
   correct = TRUE,
   correct_method = "replace",
+  correct_spelling = NULL,
+  similarity_cut = 0.25,
   ...
 )
 }
@@ -28,7 +30,11 @@ check_typo(
 
 \item{correct}{logical. A value specifying whether to correct typos. Default is TRUE.}
 
-\item{correct_method}{character. A string specifying the method to use for correction. Default is "replace".
+\item{correct_method}{character. A string specifying the method to use for correction. Default is "replace".}
+
+\item{correct_spelling}{character. A vector containing a list of valid spellings for the vector. Default is \code{NULL}.}
+
+\item{similarity_cut}{numeric. Value between 0 and 1 that determines similarity score needed for two strings to be considered typos. Default is \code{0.25}.
 The different methods are "replace", "remove", "error", and "keep".}
 
 \item{...}{Additional arguments passed to stringdist::stringdistmatrix.}
@@ -38,18 +44,68 @@ A character vector with typos corrected if chosen.
 }
 \description{
 Identifies typos in a vector by clustering similar elements together.
-Typos can be kept, removed, replaced with the most common occurrence, or cause for an error to be thrown.
+A list of the correct spelling can be provided. Otherwise the "correct" spelling is determined
+by the variation of the typo that occurs most frequently.
+Any typos deemed not similar enough to the given correct spellings will be treated as separate words,
+meaning the correct spelling of these typos is assumed to be a word not provided in the correct spellings.
+Typos can be kept, removed, replaced with the most correct spelling, or cause for an error to be thrown.
 Any NA or whitespace elements in character vectors are ignored.
 }
 \examples{
-# Example: Default operation is to replace each typo with its most common occurrence
-check_typo(c("apple", "aple", "appel", "aple","apple","apple","ap ple","Back","Back","b_eck"))
+# Example: Vector with no typos is returned as is.
+check_typo(c("apple", "banana", "cherry"))
+
+# Example: Vector with no typos and spelling provided is returned as is.
+# "cherry" is not part of the correct spelling, but different from "apple"
+# and "banana", so it is not replaced.
+check_typo(
+  c("apple", "banana", "cherry"),
+  correct_spelling = c("apple", "banana")
+)
+
+# Example: Default operation is to replace each typo with its most variation
+# of the correct spelling.
+check_typo(
+  c("apple", "aple", "appel", "aple","apple",
+  "apple","ap ple","Back","Back","b_eck")
+)
+
+# Example: Correct spellings are provided, and typos are matched to
+# different spellings.
+# provided that they are similar enough, and then replaced.
+check_typo(
+  c("applu", "ap pl", "aple", "banan", "anana", "banbanas"),
+  correct_spelling = c("apple", "banana")
+)
+
+# Example: Words are matched to correct spelling and replaced if similar.
+# Words that are not similar to the correct spellings are clustered
+# separately and matched together among themselves.
+check_typo(
+  c("applu", "aple", "anana", "banbanas", "durian", "durian", "duria"),
+  correct_spelling = c("apple", "banana")
+)
 
 # Example: Remove typos while keeping the "correct" spelling,
 # which is the most common occurrence
-check_typo(c("cow", "cowa", "cowch", "cow", "moose", "meese", "meese"), correct_method = "remove")
+check_typo(
+  c("cow", "cowa", "cowch", "cow", "moose", "meese", "meese"),
+  correct_method = "remove"
+)
 
-# Example: Replaces typos with the most common occurrence, which is not "apple" in this case
+# Example: Check if there are anyt typos and keep them.
+check_typo(
+  c("apple", "ap pl", "banana", "orange", "orenge", "apple"),
+  correct_method = "keep"
+)
+
+# Example: Replaces typos with the most common occurrence, which is
+# not "apple" in this case
 # and automatically ignores NA and empty or whitespace strings
 check_typo(c("apple", "ap pl", NA, "apple", "ap pl", "ap pl", " ", "aple"))
+
+# Example: Throw an error if there are any typos present.
+\dontrun{
+check_typo(c("apple", "apple", "ap pl"), correct_method = "error")
+}
 }

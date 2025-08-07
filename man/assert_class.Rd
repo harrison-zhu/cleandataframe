@@ -16,13 +16,13 @@ logical. Returns \code{TRUE} if the object is of the required class; otherwise, 
 }
 \description{
 Assert that an object inherits from a specified class.
-Checks if the input object inherits from the specified class and throws an error if not.
 }
 \examples{
-# Example: Passes because 1:3 is of class "integer"
+# Example: Passes and returns TRUE because 1:3 is of class "integer"
 assert_class(1:3, "integer")
 
-# Example: Prints warning because 1:3 is not of class "character"
+# Example: Prints warning and returns FALSE because 1:3 is not of the
+# class "character"
 assert_class(1:3, "character")
 
 }

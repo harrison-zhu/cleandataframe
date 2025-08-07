@@ -9,7 +9,7 @@ convert_format(
   regex_pattern = NULL,
   ignore_na = TRUE,
   case_style = NULL,
-  sep_in = "[^[:alnum:]]",
+  sep_in = "[^\\\\p{L}\\\\]{N}]",
   sep_out = "_",
   decimal_digits = NULL,
   require_integer = NULL,

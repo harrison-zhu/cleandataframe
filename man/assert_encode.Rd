@@ -16,7 +16,7 @@ logical. TRUE if all elements have the required encoding, FALSE otherwise.
 }
 \description{
 Assert that all elements of a character vector have the required encoding.
-Any invalid vectors will cause for an error to be thrown.
+Any non-character or factor vectors will cause for an error to be thrown.
 }
 \examples{
 # All elements are UTF-8 encoded
