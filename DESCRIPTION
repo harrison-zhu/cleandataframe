@@ -1,7 +1,7 @@
 Package: cleandataframe
 Type: Package
 Title: Dataframe Cleaning and Conversion
-Version: 0.1.0
+Version: 0.2.0
 Author: Harrison Zhu, Haifeng Zhu
 Maintainer: <harrison0zhu@gmail.com>
 Description: 

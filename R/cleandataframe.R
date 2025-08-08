@@ -159,74 +159,68 @@ clean_dataframe <- function(
   # Check and operate on columns
   col_op <- match.arg(column_operation, choices = c("keep", "remove_empty", "remove_duplicates", "replace_duplicates", "remove_no_name", "remove_incomplete", "replace_no_name"), several.ok = TRUE)
   if (check_column) {
-    if ("keep" %in% col_op) {
-      if (any(duplicated(t(df)))) {
-        cat(paste0("There are some duplicate columns that are present.\n"))
-      }
-    }
-
-    if ("replace_duplicates" %in% col_op) {
-      df[, duplicated(t(df))] <- NA
-    }
-
-    if ("remove_duplicates" %in% col_op) {
-      df <- df[, !duplicated(t(df)), drop = FALSE]
-    }
-
-    if ("replace_no_name" %in% col_op) {
-      no_name <- is.na(names(df)) | grepl("^\\s*$", names(df))
-      df[, no_name] <- NA
-    }
-
-    if ("remove_no_name" %in% col_op) {
-      no_name <- is.na(names(df)) | grepl("^\\s*$", names(df))
-      df <- df[, !no_name, drop = FALSE]
-    }
-
-    if ("remove_incomplete" %in% col_op) {
-      empty_cols <- apply(df, 2, function(col) any(is.na(col) | grepl("^\\s*$", col)))
-      df <- df[, !empty_cols, drop = FALSE]
-    }
-
-    if ("remove_empty" %in% col_op) {
-      empty_cols <- apply(df, 2, function(col) all(is.na(col) | grepl("^\\s*$", col)))
-      df <- df[, !empty_cols, drop = FALSE]
+    for (op in col_op) {
+      switch(op,
+        "keep" = {
+          cat(paste0("There are some duplicate columns that are present.\n"))
+        },
+        "replace_duplicates" = {
+          df[, duplicated(t(df))] <- NA
+        },
+        "remove_duplicates" = {
+          df <- df[, !duplicated(t(df)), drop = FALSE]
+        },
+        "replace_no_name" = {
+          no_name <- is.na(names(df)) | grepl("^\\s*$", names(df))
+          df[, no_name] <- NA
+        },
+        "remove_no_name" = {
+          no_name <- is.na(names(df)) | grepl("^\\s*$", names(df))
+          df <- df[, !no_name, drop = FALSE]
+        },
+        "remove_incomplete" = {
+          empty_cols <- apply(df, 2, function(col) any(is.na(col) | grepl("^\\s*$", col)))
+          df <- df[, !empty_cols, drop = FALSE]
+        },
+        "remove_empty" = {
+          empty_cols <- apply(df, 2, function(col) all(is.na(col) | grepl("^\\s*$", col)))
+          df <- df[, !empty_cols, drop = FALSE]
+        }
+      )
     }
   }
 
   # Check and operate on records (rows)
   rec_op <- match.arg(record_operation, choices = c("keep", "remove_empty", "remove_duplicates", "replace_duplicates", "remove_no_name", "remove_incomplete", "replace_no_name"), several.ok = TRUE)
   if (check_records) {
-    if ("keep" %in% rec_op) {
-      cat(paste0("There are some duplicate records that are present.\n"))
-    }
-    
-    if ("replace_duplicates" %in% rec_op) {
-      df[duplicated(df), ] <- NA
-    }
-
-    if ("remove_duplicates" %in% rec_op) {
-      df <- df[!duplicated(df), , drop = FALSE]
-    }
-    
-    if ("replace_no_name" %in% rec_op) {
-      no_name <- grepl("^\\s*$", names(df))
-      df[, no_name] <- NA
-    }
-
-    if ("remove_no_name" %in% rec_op) {
-      no_name <- grepl("^\\s*$", names(df))
-      df <- df[, !no_name, drop = FALSE]
-    }
-
-    if ("remove_incomplete" %in% rec_op) {
-      empty_rows <- apply(df, 1, function(row) any(is.na(row) | grepl("^\\s*$", col)))
-      df <- df[!empty_rows, , drop = FALSE]
-    }
-
-    if ("remove_empty" %in% rec_op) {
-      empty_rows <- apply(df, 1, function(row) all(is.na(row) | grepl("^\\s*$", col)))
-      df <- df[!empty_rows, , drop = FALSE]
+    for (op in rec_op) {
+      switch(op,
+        "keep" = {
+          cat(paste0("There are some duplicate records that are present.\n"))
+        },
+        "replace_duplicates" = {
+          df[duplicated(df), ] <- NA
+        },
+        "remove_duplicates" = {
+          df <- df[!duplicated(df), , drop = FALSE]
+        },
+        "replace_no_name" = {
+          no_name <- grepl("^\\s*$", rownames(df))
+          df[no_name, ] <- NA
+        },
+        "remove_no_name" = {
+          no_name <- grepl("^\\s*$", rownames(df))
+          df <- df[!no_name, , drop = FALSE]
+        },
+        "remove_incomplete" = {
+          empty_rows <- apply(df, 1, function(row) any(is.na(row) | grepl("^\\s*$", col)))
+          df <- df[!empty_rows, , drop = FALSE]
+        },
+        "remove_empty" = {
+          empty_rows <- apply(df, 1, function(row) all(is.na(row) | grepl("^\\s*$", col)))
+          df <- df[!empty_rows, , drop = FALSE]
+        }
+      )
     }
   }
 

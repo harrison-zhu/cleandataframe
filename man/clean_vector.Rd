@@ -13,24 +13,25 @@ clean_vector(
   encode_required = NULL,
   encode_convert = NULL,
   from_encode = "",
-  validate_non_duplicate_value = FALSE,
-  duplicate_operation = "keep",
-  validate_nonempty_value = FALSE,
-  empty_operation = "keep",
-  sep_in = "[^[:alnum:]]",
-  squeeze_continuous_sep_in = TRUE,
-  remove_initial_and_end_sep_in = TRUE,
   validate_format = FALSE,
   convert_format = FALSE,
   format_pattern = NULL,
   format_case_style = NULL,
-  check_typo = FALSE,
-  correct_typo = FALSE,
-  typo_operation = "replace",
-  sep_out = "_",
   format_decimal_digits = NULL,
   format_require_integer = NULL,
   format_date_format = NULL,
+  check_typo = FALSE,
+  correct_typo = FALSE,
+  correct_spelling = NULL,
+  sep_in = "[^\\\\p{L}\\\\p{N}]",
+  squeeze_continuous_sep_in = TRUE,
+  remove_initial_and_end_sep_in = TRUE,
+  sep_out = "_",
+  typo_operation = "replace",
+  validate_non_duplicate_value = FALSE,
+  duplicate_operation = "keep",
+  validate_nonempty_value = FALSE,
+  empty_operation = "keep",
   ignore_na = TRUE,
   na_value = NA,
   ...
@@ -53,20 +54,6 @@ clean_vector(
 
 \item{from_encode}{character. The encoding to convert from. Default is \code{"UTF-8"}.}
 
-\item{validate_non_duplicate_value}{logical. Whether to check for duplicate values. Default is \code{TRUE}.}
-
-\item{duplicate_operation}{character. Operation to perform if duplicates are found. One of \code{"keep"}, \code{"keep_first"}, \code{"keep_last"}, \code{"replace"}, or \code{"error"}. Default is \code{"keep"}.}
-
-\item{validate_nonempty_value}{logical. Whether to check for empty values (\code{NA} or \code{""}). Default is \code{TRUE}.}
-
-\item{empty_operation}{character. Operation to perform if empty values are found. One of \code{"keep"}, \code{"remove"}, \code{"replace"}, or \code{"error"}. Default is \code{"keep"}.}
-
-\item{sep_in}{character. Regular expression for splitting words when converting case style. Default is \code{"[^[:alnum:]]"}.}
-
-\item{squeeze_continuous_sep_in}{logical. Whether to squeeze multiple consecutive separators in \code{sep_in} to a single separator. Default is \code{TRUE}.}
-
-\item{remove_initial_and_end_sep_in}{logical. Whether to remove separators at the start or end of the string when converting case style. Default is \code{TRUE}.}
-
 \item{validate_format}{logical. Whether to validate the format of the vector (e.g., regex for character, decimal digits for numeric, date format for dates). Default is \code{FALSE}.}
 
 \item{convert_format}{logical. Whether to convert the format to the vector to the specified parameters. Default is \code{FALSE}.}
@@ -75,19 +62,35 @@ clean_vector(
 
 \item{format_case_style}{character. String specifying the case style to enforce or convert to (e.g., "lower", "upper", "title", "snake", etc.). Default is \code{NULL}.}
 
-\item{check_typo}{logical. Whether to check for typos in character/factor vectors. Default is \code{TRUE}.}
-
-\item{correct_typo}{logical. Whether to correct typos if found. Default is \code{FALSE}.}
-
-\item{typo_operation}{character. Operation to perform if typos are found. One of \code{"keep"}, \code{"remove"}, \code{"replace"}, or \code{"error"}. Default is \code{"keep"}.}
-
-\item{sep_out}{character. Separator to use when joining words after case conversion. Default is \code{"_"}.}
-
 \item{format_decimal_digits}{integer. Number of decimal digits required for numeric vectors. Default is \code{NULL}.}
 
 \item{format_require_integer}{logical. If \code{TRUE}, require integer values for numeric vectors. Default is \code{NULL}.}
 
 \item{format_date_format}{character string specifying the date format for date/time vectors. Default is \code{NULL}.}
+
+\item{check_typo}{logical. Whether to check for typos in character/factor vectors. Default is \code{TRUE}.}
+
+\item{correct_typo}{logical. Whether to correct typos if found. Default is \code{FALSE}.}
+
+\item{correct_spelling}{character. A vector containing a list of valid spellings for the vector. Default is \code{NULL}.}
+
+\item{sep_in}{character. Regular expression for splitting words when converting case style. Default is \code{"[^\\p{L}\\]{N}]"}.}
+
+\item{squeeze_continuous_sep_in}{logical. Whether to squeeze multiple consecutive separators in \code{sep_in} to a single separator. Default is \code{TRUE}.}
+
+\item{remove_initial_and_end_sep_in}{logical. Whether to remove separators at the start or end of the string when converting case style. Default is \code{TRUE}.}
+
+\item{sep_out}{character. Separator to use when joining words after case conversion. Default is \code{"_"}.}
+
+\item{typo_operation}{character. Operation to perform if typos are found. One of \code{"keep"}, \code{"remove"}, \code{"replace"}, or \code{"error"}. Default is \code{"keep"}.}
+
+\item{validate_non_duplicate_value}{logical. Whether to check for duplicate values. Default is \code{TRUE}.}
+
+\item{duplicate_operation}{character. Operation to perform if duplicates are found. One of \code{"keep"}, \code{"keep_first"}, \code{"keep_last"}, \code{"replace"}, or \code{"error"}. Default is \code{"keep"}.}
+
+\item{validate_nonempty_value}{logical. Whether to check for empty values (\code{NA} or \code{""}). Default is \code{TRUE}.}
+
+\item{empty_operation}{character. Operation to perform if empty values are found. One of \code{"keep"}, \code{"remove"}, \code{"replace"}, or \code{"error"}. Default is \code{"keep"}.}
 
 \item{ignore_na}{logical. For character/factor vectors, whether to ignore NA values. Default is \code{TRUE}.}
 
